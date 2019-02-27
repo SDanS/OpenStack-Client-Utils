@@ -133,7 +133,7 @@ sub new {
     #   ensure all options are included in GetOptions call.
     #   Fully implement $pw_in_tracking eq 'false'.
     #       It's intended to disable
-    #   Fully impletment force_reauth
+    #   Fully impletment force_reauth.
     if ( !caller ) {
         GetOptions(
             'username=s'   => \$args{' username '},
