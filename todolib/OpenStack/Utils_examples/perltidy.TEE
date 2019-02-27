@@ -1,0 +1,180 @@
+=pod
+
+=head1 Name:
+
+compute_require.pl
+
+=head1 Description:
+
+This is a modulino with a small starter set of utility functions. It further
+simplifies authentication and provides a command line interfact for the APi
+either as a one shot executor or as the backing library for scripts which 
+provide scripted api requests.
+
+=head2 Usage:
+
+    require('/path/to/compute_request.pl');
+
+
+   
+
+=item Modulino Interface
+
+    C<require('./OpenStack-Client/lib/OpenStack/Client/Utils/ocu_utility_modulino.pl)>
+    C<cPOpenStack::ComputeRequests-<gt>new()>
+
+     B<OR>
+
+    C<cPOpenStack::ComputeRequests->new()
+=item 
+
+As as command line client to send one shot requests or retrieve a token to store
+in an environmental variable or elsewhere for running scripted requests.
+    
+=head1 OBJECT INSTANTIATION:
+
+=head2 Name: new()
+
+=head2 Usage: 
+
+    require('/path/to/compute_request.pl');
+
+
+    OpenStack::Client::Utils::Utility->new(
+
+=item Scope
+
+        'scope' => {
+            'type' => 'project',
+            'projectname' => '<the name>',
+            'domainname'  => 'the name of the domain',
+
+                B<OR>
+
+            'domainid'    => 'the id of the domain'
+        }
+
+                B<OR>
+            
+        'scope' => {
+            'type' => 'project',
+            'projectid' => 'the id'
+
+        }
+
+                B<OR>
+        
+        'scope' => {   type' => 'system'   }
+
+=item Identity:
+
+You can pass this combination. Domain is set to default if not specified.
+
+
+        'username' => <username>,
+        'password' => <password>,
+        'domainname' => <domainname>,
+            
+            B<OR>
+    
+        'domainid' => '<domainid>'
+
+            B<OR>
+
+        Use the user id for greater scpecificity.
+
+        'userid' => '<userid>',
+        'password' => <password>
+
+            B<OR>
+
+        'token' => '<token>'
+
+Provide the identity endpoint;
+
+        'authurl' => '<auth_url>'
+
+Look ma! No domain!
+
+=cut 
+            'username=s'   => \$args{' username '},
+            'password=s'   => \$args{' password '},
+            'domainid=s'   => \$args{' domainid '},
+            'domainname=s' => \$args{' domainname '},
+            ### --scope type=project --scope projectname=<project name> --username<username> --password=<password>
+=head1 AUTHENTICATION OVERRIDES
+
+=cut
+=head2 Here's your environmental variables.
+
+      OS_PROJECT_DOMAIN_ID=dsefault
+
+      OS_PROJECT_ID=09d4f0ab68e243eda5de26855b6636aa
+      OS_REGION_NAME=RegionOne
+      OS_USER_DOMAIN_NAME=Default
+      OS_PROJECT_NAME=admin
+      OS_IDENTITY_API_VERSION=3
+      OS_PASSWORD=
+      OS_AUTH_URL=https://service01a-c2.cpanel.net:5001/v3
+      OS_USERNAME=admin
+      OS_INTERFACE=public
+      OS_TOKEN=     
+
+=cut
+=head1 REQUEST OVERRIDES
+
+=cut
+=head3 STUBS:
+
+=cut
+    ### Get options if !caller.
+=head2 This is some old stuff. No longer used.
+
+=head3 Why would you keep such a thing.
+
+I preserved as it was the main logic involved in walking the path through the 
+last script I wrote to make the sorting requst. My goal in this modulino is
+to replace the terseness with granular atomic and reusable groups of methods that can 
+achieve the goal and remain independent so they can be mixed and matched.
+
+sub instance_key_sort {
+    my $self           = shift;
+    my $response       = shift;
+    my $sort_attribute = shift;
+    my $sorted         = shift;
+    my $hv_hr;
+    my @hv_arr;
+    my @req_arr;
+    my $response_collection = [];
+    my $common_key          = 'server';
+
+    foreach my $server ( @{ $response->{'servers'} } ) {
+
+        my $req_arg = request_args( 'path' => "/servers/" . $server->{'id'} );
+        push @req_arr, $req_arg;
+    }
+
+    my @hv_name;
+    my $vm_sorted_val;
+    my @index_href_path = ( $common_key, $sort_attribute );
+    map {
+        my $index_href = $self->request( %{$_} );
+        ### Stores the path of refs to the last element in the array.
+        @hv_name = map { $index_href = $index_href->{$_}; } @index_href_path;
+        ### Selects href that was contained in $response->{$common_key} and pulls
+        ### out the value for the sought attribute.
+        $vm_sorted_val = $hv_name[0]->{$sorted};
+    } @req_arr;
+    push @{ $hv_hr->{ $hv_name[$#hv_name] } }, $hv_hr->{$vm_sorted_val};
+    my @arr = map +{ $_ => $hv_hr->{$_} }, keys %$hv_hr;
+    return \@arr;
+}
+
+=cut
+      ( ref $_[0] =~ /ARRAY|HASH/ ) ? shift : get_response_attribute(@_);
+    ###  =  my (  @$path_to_attr )
+    $fwd_args{'token'} = $args->{'token'}
+      ? $args->{'token'}
+      ### Don't fetch tokens if force_reauth is true.
+      : ( $ENV{'OS_TOKEN'} ) ? $ENV{'OS_TOKEN'}
+      ### Don't fetch tokens if force_reauth is true.
